@@ -1,0 +1,148 @@
+name: UBPorts - Build
+
+# Credits to:
+# https://github.com/TeamWin
+# https://gitlab.com/OrangeFox
+# https://github.com/azwhikaru for Recovery Builder Template
+# And all Contributors in every repositories I used
+
+on:
+  workflow_dispatch:
+    inputs:
+      UBPORTS_VERSION:
+        description: 'UBPorts Version'
+        required: true
+        default: 'focal'
+        options:
+        - xenial
+        - focal
+      DEVICE_INFO:
+        description: 'UBPorts Device Info'
+        required: true
+        default: 'https://github.com/dopaemon/xiaomi-mayfly.git'
+      DEVICE_INFO_BRANCH:
+        description: 'Device Info Tree Branch'
+        required: true
+        default: 'halium-12'
+        type: choice
+        options:
+        - halium-9
+        - halium-10
+        - halium-11
+        - halium-12
+        - halium-13
+      DEVICE_BRAND:
+        description: 'Device brand'
+        required: true
+        default: 'xiaomi'
+        options:
+        - xiaomi
+        - samsung
+        - google
+        - sony
+        - other
+      DEVICE_NAME:
+        description: 'Specify your Device Codename'
+        required: true
+        default: 'mayfly'
+      ADAPTATION_TOOLS_BRANCH:
+        description: 'Adaptation tools branch'
+        required: true
+        default: 'main'
+        options:
+        - main
+        - halium-10
+        - halium-10-focal
+        - halium-11
+        - cfi
+      ROOTFS_URL:
+        description: 'UBPorts rootfs url'
+        required: true
+        default: "https://ci.ubports.com/job/focal-hybris-rootfs-arm64/job/master/lastSuccessfulBuild/artifact/ubuntu-touch-android9plus-rootfs-arm64.tar.gz"
+        options:
+        - https://ci.ubports.com/job/focal-hybris-rootfs-arm64/job/master/lastSuccessfulBuild/artifact/ubuntu-touch-android9plus-rootfs-arm64.tar.gz
+      OTA_CHANNEL:
+        description: 'UBPorts OTA Channel'
+        required: true
+        default: '20.04/arm64/android9plus/stable'
+        options:
+        - 20.04/arm64/android9plus/stable
+
+jobs:
+  build:
+    name: Build UBPorts by ${{ github.actor }}
+    runs-on: ubuntu-22.04
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ROOTFS_URL: ${{ github.event.inputs.ROOTFS_URL }}
+      OTA_CHANNEL: ${{ github.event.inputs.OTA_CHANNEL }}
+    permissions:
+      contents: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Clean-up
+      uses: rokibhasansagar/slimhub_actions@main
+
+    - name: Swap Space
+      uses: pierotofy/set-swap-space@master
+      with:
+        swap-size-gb: 12
+
+    - name: Build Environment
+      run: |
+        sudo apt install aria2 bc bison build-essential ca-certificates cpio curl fakeroot flex git kmod libssl-dev libtinfo5 lz4 python2 python3 sudo unzip wget xz-utils -y
+        sudo ln -s python2 /usr/bin/python
+
+    - name: Setup ccache
+      uses: hendrikmuhs/ccache-action@v1.2
+      with:
+        max-size: "10G"
+
+    - name: Clone Device Tree
+      run: |
+        cd ${GITHUB_WORKSPACE}/
+        git clone ${{ github.event.inputs.DEVICE_INFO }} -b ${{ github.event.inputs.DEVICE_INFO_BRANCH }} ./${{ github.event.inputs.DEVICE_BRAND }}-${{ github.event.inputs.DEVICE_NAME }}
+        cd ${{ github.event.inputs.DEVICE_BRAND }}-${{ github.event.inputs.DEVICE_NAME }}
+        echo "COMMIT_ID=$(git rev-parse HEAD)" >> $GITHUB_ENV
+
+    - name: Building UBPorts
+      run: |
+        cd ${GITHUB_WORKSPACE}/${{ github.event.inputs.DEVICE_BRAND }}-${{ github.event.inputs.DEVICE_NAME }}
+        set +e
+        export USE_CCACHE=1
+        export CCACHE_EXEC=/usr/bin/ccache
+        set -e
+        git submodule add -b ${{ github.event.inputs.ADAPTATION_TOOLS_BRANCH }} https://gitlab.com/ubports/porting/community-ports/halium-generic-adaptation-build-tools.git build
+        ./build/build.sh
+
+    - name: Building devel-flashable UBPorts
+      run: |
+        cd ${GITHUB_WORKSPACE}/${{ github.event.inputs.DEVICE_BRAND }}-${{ github.event.inputs.DEVICE_NAME }}
+        set +e
+        export USE_CCACHE=1
+        export CCACHE_EXEC=/usr/bin/ccache
+        set -e
+        ./build/prepare-fake-ota.sh out/device_${{ github.event.inputs.DEVICE_NAME }}.tar.xz ota
+        mkdir -p out
+        ./build/system-image-from-ota.sh ota/ubuntu_command out
+        mv out/rootfs.img out/ubuntu.img
+
+    - name: Set Release Properties
+      run: |
+        echo "BUILD_DATE=$(TZ=Asia/Ho_Chi_Minh date +%Y%m%d)" >> $GITHUB_ENV
+        cd ${GITHUB_WORKSPACE}/${{ github.event.inputs.DEVICE_BRAND }}-${{ github.event.inputs.DEVICE_NAME }}
+
+    - name: Upload to Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          ${GITHUB_WORKSPACE}/${{ github.event.inputs.DEVICE_BRAND }}-${{ github.event.inputs.DEVICE_NAME }}/out/*.img
+        name: UBPorts for ${{ github.event.inputs.DEVICE_NAME }} // ${{ env.BUILD_DATE }}
+        tag_name: ${{ github.run_id }}
+        body: |
+          ## UBPorts Building
+          Build: UBPorts-${{ github.event.inputs.UBPORTS_VERSION }}
+          Device: [Device Info](${{ github.event.inputs.DEVICE_INFO }}/tree/${{ github.event.inputs.DEVICE_INFO_BRANCH }})
+          Commit: Most recent [commit](${{ github.event.inputs.DEVICE_INFO }}/commit/${{ env.COMMIT_ID }}) during building.
