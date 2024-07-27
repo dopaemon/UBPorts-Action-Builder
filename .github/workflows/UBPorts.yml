@@ -13,6 +13,7 @@ on:
         description: 'UBPorts Version'
         required: true
         default: 'focal'
+        type: choice
         options:
         - xenial
         - focal
@@ -35,6 +36,7 @@ on:
         description: 'Device brand'
         required: true
         default: 'xiaomi'
+        type: choice
         options:
         - xiaomi
         - samsung
@@ -49,6 +51,7 @@ on:
         description: 'Adaptation tools branch'
         required: true
         default: 'main'
+        type: choice
         options:
         - main
         - halium-10
@@ -59,22 +62,26 @@ on:
         description: 'UBPorts rootfs url'
         required: true
         default: "https://ci.ubports.com/job/focal-hybris-rootfs-arm64/job/master/lastSuccessfulBuild/artifact/ubuntu-touch-android9plus-rootfs-arm64.tar.gz"
+        type: choice
         options:
         - https://ci.ubports.com/job/focal-hybris-rootfs-arm64/job/master/lastSuccessfulBuild/artifact/ubuntu-touch-android9plus-rootfs-arm64.tar.gz
       OTA_CHANNEL:
         description: 'UBPorts OTA Channel'
         required: true
         default: '20.04/arm64/android9plus/stable'
+        type: choice
         options:
         - 20.04/arm64/android9plus/stable
       KERNEL_MODULES_REPO:
         description: 'Extra kernel modules'
         default: 'https://github.com/cupid-development/android_kernel_xiaomi_sm8450-modules.git'
+        type: choice
         options:
         - https://github.com/cupid-development/android_kernel_xiaomi_sm8450-modules.git
       KERNEL_MODULES_BRANCH:
         description: 'Extra kernel modules branch'
         default: 'lineage-21'
+        type: choice
         options:
         - lineage-19
         - lineage-20
@@ -85,11 +92,13 @@ on:
       KERNEL_DEVICETREES_REPO:
         description: 'Extra kernel devicetrees branch'
         default: 'https://github.com/cupid-development/android_kernel_xiaomi_sm8450-devicetrees.git'
+        type: choice
         options:
         - https://github.com/cupid-development/android_kernel_xiaomi_sm8450-devicetrees.git
       KERNEL_DEVICETREES_BRANCH:
         description: 'Extra devicetrees branch'
         default: 'lineage-21'
+        type: choice
         options:
         - lineage-19
         - lineage-20
