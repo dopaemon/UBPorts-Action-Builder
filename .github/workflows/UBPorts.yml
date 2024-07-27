@@ -72,40 +72,40 @@ on:
         type: choice
         options:
         - 20.04/arm64/android9plus/stable
-      KERNEL_MODULES_REPO:
-        description: 'Extra kernel modules'
-        default: 'https://github.com/cupid-development/android_kernel_xiaomi_sm8450-modules.git'
-        type: choice
-        options:
-        - https://github.com/cupid-development/android_kernel_xiaomi_sm8450-modules.git
-      KERNEL_MODULES_BRANCH:
-        description: 'Extra kernel modules branch'
-        default: 'lineage-21'
-        type: choice
-        options:
-        - lineage-19
-        - lineage-20
-        - lineage-21
-      KERNEL_MODULES_LOCAL:
-        description: 'Extra kernel modules local'
-        default: 'sm8450-modules'
-      KERNEL_DEVICETREES_REPO:
-        description: 'Extra kernel devicetrees branch'
-        default: 'https://github.com/cupid-development/android_kernel_xiaomi_sm8450-devicetrees.git'
-        type: choice
-        options:
-        - https://github.com/cupid-development/android_kernel_xiaomi_sm8450-devicetrees.git
-      KERNEL_DEVICETREES_BRANCH:
-        description: 'Extra devicetrees branch'
-        default: 'lineage-21'
-        type: choice
-        options:
-        - lineage-19
-        - lineage-20
-        - lineage-21
-      KERNEL_DEVICETREES_LOCAL:
-        description: 'Extra devicetrees local'
-        default: 'sm8450-devicetrees'
+      # KERNEL_MODULES_REPO:
+      #   description: 'Extra kernel modules'
+      #   default: 'https://github.com/cupid-development/android_kernel_xiaomi_sm8450-modules.git'
+      #   type: choice
+      #   options:
+      #   - https://github.com/cupid-development/android_kernel_xiaomi_sm8450-modules.git
+      # KERNEL_MODULES_BRANCH:
+      #   description: 'Extra kernel modules branch'
+      #   default: 'lineage-21'
+      #   type: choice
+      #   options:
+      #   - lineage-19
+      #   - lineage-20
+      #   - lineage-21
+      # KERNEL_MODULES_LOCAL:
+      #   description: 'Extra kernel modules local'
+      #   default: 'sm8450-modules'
+      # KERNEL_DEVICETREES_REPO:
+      #   description: 'Extra kernel devicetrees branch'
+      #   default: 'https://github.com/cupid-development/android_kernel_xiaomi_sm8450-devicetrees.git'
+      #   type: choice
+      #   options:
+      #   - https://github.com/cupid-development/android_kernel_xiaomi_sm8450-devicetrees.git
+      # KERNEL_DEVICETREES_BRANCH:
+      #   description: 'Extra devicetrees branch'
+      #   default: 'lineage-21'
+      #   type: choice
+      #   options:
+      #   - lineage-19
+      #   - lineage-20
+      #   - lineage-21
+      # KERNEL_DEVICETREES_LOCAL:
+      #   description: 'Extra devicetrees local'
+      #   default: 'sm8450-devicetrees'
 
 jobs:
   build:
@@ -147,8 +147,10 @@ jobs:
         cd ${{ github.event.inputs.DEVICE_BRAND }}-${{ github.event.inputs.DEVICE_NAME }}
         echo "COMMIT_ID=$(git rev-parse HEAD)" >> $GITHUB_ENV
         git clone -b ${{ github.event.inputs.ADAPTATION_TOOLS_BRANCH }} https://gitlab.com/ubports/porting/community-ports/halium-generic-adaptation-build-tools.git build
-        git clone -b ${{ github.event.inputs.KERNEL_MODULES_BRANCH }} ${{ github.event.inputs.KERNEL_MODULES_REPO }} ${{ github.event.inputs.KERNEL_MODULES_LOCAL }}
-        git clone -b ${{ github.event.inputs.KERNEL_DEVICETREES_BRANCH }} ${{ github.event.inputs.KERNEL_DEVICETREES_REPO }} ${{ github.event.inputs.KERNEL_DEVICETREES_LOCAL }}
+        # git clone -b ${{ github.event.inputs.KERNEL_MODULES_BRANCH }} ${{ github.event.inputs.KERNEL_MODULES_REPO }} ${{ github.event.inputs.KERNEL_MODULES_LOCAL }}
+        # git clone -b ${{ github.event.inputs.KERNEL_DEVICETREES_BRANCH }} ${{ github.event.inputs.KERNEL_DEVICETREES_REPO }} ${{ github.event.inputs.KERNEL_DEVICETREES_LOCAL }}
+        git clone -b lineage-21 https://github.com/cupid-development/android_kernel_xiaomi_sm8450-modules.git sm8450-modules
+        git clone -b lineage-21 https://github.com/cupid-development/android_kernel_xiaomi_sm8450-devicetrees.git sm8450-devicetrees
 
     - name: Building UBPorts
       run: |
