@@ -117,6 +117,8 @@ jobs:
         set -e
         git config advice.addIgnoredFile false
         git submodule add -b ${{ github.event.inputs.ADAPTATION_TOOLS_BRANCH }} https://gitlab.com/ubports/porting/community-ports/halium-generic-adaptation-build-tools.git build
+        git add -vAf
+        git commit -sm "deviceinfo: add submodules"
         ./build/build.sh
 
     - name: Building devel-flashable UBPorts
