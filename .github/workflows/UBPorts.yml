@@ -67,6 +67,36 @@ on:
         default: '20.04/arm64/android9plus/stable'
         options:
         - 20.04/arm64/android9plus/stable
+      KERNEL_MODULES_REPO:
+        description: 'Extra kernel modules'
+        default: 'https://github.com/cupid-development/android_kernel_xiaomi_sm8450-modules.git'
+        options:
+        - https://github.com/cupid-development/android_kernel_xiaomi_sm8450-modules.git
+      KERNEL_MODULES_BRANCH:
+        description: 'Extra kernel modules branch'
+        default: 'lineage-21'
+        options:
+        - lineage-19
+        - lineage-20
+        - lineage-21
+      KERNEL_MODULES_LOCAL:
+        description: 'Extra kernel modules local'
+        default: 'sm8450-modules'
+      KERNEL_DEVICETREES_REPO:
+        description: 'Extra kernel devicetrees branch'
+        default: 'https://github.com/cupid-development/android_kernel_xiaomi_sm8450-devicetrees.git'
+        options:
+        - https://github.com/cupid-development/android_kernel_xiaomi_sm8450-devicetrees.git
+      KERNEL_DEVICETREES_BRANCH:
+        description: 'Extra devicetrees branch'
+        default: 'lineage-21'
+        options:
+        - lineage-19
+        - lineage-20
+        - lineage-21
+      KERNEL_DEVICETREES_LOCAL:
+        description: 'Extra devicetrees local'
+        default: 'sm8450-devicetrees'
 
 jobs:
   build:
@@ -101,12 +131,15 @@ jobs:
       with:
         max-size: "10G"
 
-    - name: Clone Device Tree
+    - name: Setup device info
       run: |
         cd ${GITHUB_WORKSPACE}/
         git clone ${{ github.event.inputs.DEVICE_INFO }} -b ${{ github.event.inputs.DEVICE_INFO_BRANCH }} ./${{ github.event.inputs.DEVICE_BRAND }}-${{ github.event.inputs.DEVICE_NAME }}
         cd ${{ github.event.inputs.DEVICE_BRAND }}-${{ github.event.inputs.DEVICE_NAME }}
         echo "COMMIT_ID=$(git rev-parse HEAD)" >> $GITHUB_ENV
+        git clone -b ${{ github.event.inputs.ADAPTATION_TOOLS_BRANCH }} https://gitlab.com/ubports/porting/community-ports/halium-generic-adaptation-build-tools.git build
+        git clone -b ${{ github.event.inputs.KERNEL_MODULES_BRANCH }} ${{ github.event.inputs.KERNEL_MODULES_REPO }} ${{ github.event.inputs.KERNEL_MODULES_LOCAL }}
+        git clone -b ${{ github.event.inputs.KERNEL_DEVICETREES_BRANCH }} ${{ github.event.inputs.KERNEL_DEVICETREES_REPO }} ${{ github.event.inputs.KERNEL_DEVICETREES_LOCAL }}
 
     - name: Building UBPorts
       run: |
@@ -115,7 +148,6 @@ jobs:
         export USE_CCACHE=1
         export CCACHE_EXEC=/usr/bin/ccache
         set -e
-        git clone -b ${{ github.event.inputs.ADAPTATION_TOOLS_BRANCH }} https://gitlab.com/ubports/porting/community-ports/halium-generic-adaptation-build-tools.git build
         ./build/build.sh
 
     - name: Building devel-flashable UBPorts
