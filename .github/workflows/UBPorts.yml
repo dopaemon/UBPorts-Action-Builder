@@ -162,7 +162,7 @@ jobs:
         export CCACHE_EXEC=/usr/bin/ccache
         set -e
         ./build/build.sh
-        cp -r ./out/*.img ./Release/
+        ls */*.img
 
     - name: Building devel-flashable UBPorts
       run: |
@@ -172,6 +172,7 @@ jobs:
         export CCACHE_EXEC=/usr/bin/ccache
         set -e
         ./build/prepare-fake-ota.sh out/device_${{ github.event.inputs.DEVICE_NAME }}.tar.xz ota
+        ls */*.img
         cp -r ./images/* ./Release/
         mkdir -p out
         ./build/system-image-from-ota.sh ota/ubuntu_command out
