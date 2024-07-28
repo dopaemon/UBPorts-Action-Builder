@@ -131,7 +131,8 @@ jobs:
 
     - name: Build Environment
       run: |
-        sudo apt install aria2 bc bison build-essential ca-certificates cpio curl fakeroot flex git kmod libssl-dev libtinfo5 lz4 python2 python3 sudo unzip wget xz-utils -y
+        sudo apt-get update
+        sudo apt-get install aria2 bc bison build-essential ca-certificates cpio curl fakeroot flex git kmod libssl-dev libtinfo5 lz4 python2 python3 sudo unzip wget xz-utils git img2simg jq -yqq
         sudo rm -rf /usr/bin/python
         sudo ln -s python2 /usr/bin/python
 
