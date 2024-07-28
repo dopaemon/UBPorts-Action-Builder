@@ -152,6 +152,7 @@ jobs:
         # git clone -b ${{ github.event.inputs.KERNEL_DEVICETREES_BRANCH }} ${{ github.event.inputs.KERNEL_DEVICETREES_REPO }} ${{ github.event.inputs.KERNEL_DEVICETREES_LOCAL }}
         git clone -b lineage-21 https://github.com/cupid-development/android_kernel_xiaomi_sm8450-modules.git sm8450-modules
         git clone -b lineage-21 https://github.com/cupid-development/android_kernel_xiaomi_sm8450-devicetrees.git sm8450-devicetrees
+        mkdir -p Release
 
     - name: Building UBPorts
       run: |
@@ -161,6 +162,7 @@ jobs:
         export CCACHE_EXEC=/usr/bin/ccache
         set -e
         ./build/build.sh
+        cp -r ./out/*.img ./Release/
 
     - name: Building devel-flashable UBPorts
       run: |
@@ -170,6 +172,7 @@ jobs:
         export CCACHE_EXEC=/usr/bin/ccache
         set -e
         ./build/prepare-fake-ota.sh out/device_${{ github.event.inputs.DEVICE_NAME }}.tar.xz ota
+        cp -r ./images/* ./Release/
         mkdir -p out
         ./build/system-image-from-ota.sh ota/ubuntu_command out
         mv out/rootfs.img out/ubuntu.img
@@ -183,7 +186,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          ${GITHUB_WORKSPACE}/${{ github.event.inputs.DEVICE_BRAND }}-${{ github.event.inputs.DEVICE_NAME }}/out/*.img
+          ${GITHUB_WORKSPACE}/${{ github.event.inputs.DEVICE_BRAND }}-${{ github.event.inputs.DEVICE_NAME }}/Release/*.img
         name: UBPorts for ${{ github.event.inputs.DEVICE_NAME }} // ${{ env.BUILD_DATE }}
         tag_name: ${{ github.run_id }}
         body: |
